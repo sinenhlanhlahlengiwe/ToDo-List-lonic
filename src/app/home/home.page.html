@@ -1,0 +1,85 @@
+<ion-header [translucent]="true">
+  <ion-toolbar color="primary">
+    <ion-title>
+      My Todo List
+    </ion-title>
+    <div slot="end" class="ion-padding-end date-display">
+      <ion-text>{{ today | date:'EEEE, MMMM d' }}</ion-text>
+    </div>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <div class="ion-padding">
+    <!-- Add Task Form -->
+    <ion-item>
+      <ion-label position="stacked">Task Title</ion-label>
+      <ion-input [(ngModel)]="newTaskTitle" placeholder="Enter task title"></ion-input>
+    </ion-item>
+
+    <ion-item>
+      <ion-label position="stacked">Description (optional)</ion-label>
+      <ion-textarea [(ngModel)]="newTaskDescription" placeholder="Enter task description"></ion-textarea>
+    </ion-item>
+
+    <div class="ion-margin-vertical">
+      <ion-label class="due-date-label">Due Date (optional)</ion-label>
+      <ion-button
+        expand="block"
+        fill="outline"
+        class="date-picker-button"
+        id="open-date-picker"
+        color="primary">
+        <ion-icon name="calendar-outline" slot="start"></ion-icon>
+{{ newTaskDueDate ? (newTaskDueDate | date:'MMM d, y h:mm a') : 'Select date and time' }}
+      </ion-button>
+
+      <ion-modal [keepContentsMounted]="true" trigger="open-date-picker" [initialBreakpoint]="0.5" [breakpoints]="[0, 0.5, 1]">
+        <ng-template>
+          <ion-datetime
+            [(ngModel)]="newTaskDueDate"
+            (ionChange)="onDateChange($event)"
+            presentation="date-time"
+            [showDefaultButtons]="true"
+            [color]="'primary'"
+            [preferWheel]="true"
+            [min]="today"
+            hourCycle="h12">
+          </ion-datetime>
+        </ng-template>
+      </ion-modal>
+    </div>
+
+    <ion-button expand="block" (click)="addTask()" class="ion-margin-top add-task-button">
+      <ion-icon name="add-circle-outline" slot="start"></ion-icon>
+      Add Task
+    </ion-button>
+
+    <!-- Task List -->
+    <ion-list *ngIf="tasks$ | async as tasks">
+      <ion-item-sliding *ngFor="let task of tasks">
+        <ion-item>
+          <ion-label [class.completed]="task.completed">
+            <h2>{{ task.title }}</h2>
+            <p *ngIf="task.description">{{ task.description }}</p>
+            <p *ngIf="task.dueDate" class="due-date">
+              <ion-icon name="calendar-outline"></ion-icon>
+              Due: {{ task.dueDate | date:'MMM d, y' }}
+            </p>
+          </ion-label>
+          <ion-button class="action-button" slot="end" fill="clear" color="secondary" (click)="toggleTaskCompletion(task.id)">
+            <ion-icon [name]="task.completed ? 'refresh-outline' : 'checkmark-circle-outline'" slot="start"></ion-icon>
+            {{ task.completed ? 'Undo' : 'Complete' }}
+          </ion-button>
+        </ion-item>
+
+        <ion-item-options side="end">
+          <ion-item-option class="action-button" color="danger" (click)="deleteTask(task.id)">
+            <ion-icon name="trash-outline" slot="start"></ion-icon>
+            Delete
+          </ion-item-option>
+        </ion-item-options>
+      </ion-item-sliding>
+    </ion-list>
+  </div>
+</ion-content>
